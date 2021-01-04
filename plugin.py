@@ -11,8 +11,8 @@ import shutil
 import tempfile
 
 
-URL = "https://github.com/sumneko/vscode-lua/releases/download/v{0}/lua-{0}.vsix"
-
+# URL = "https://github.com/sumneko/vscode-lua/releases/download/v{0}/lua-{0}.vsix"
+URL = "E:/GitHub/DailyNotes/Sublime/PlusNative/sumneko.lua-{0}.vsix"
 
 class Lua(AbstractPlugin):
     @classmethod
@@ -55,16 +55,22 @@ class Lua(AbstractPlugin):
 
     @classmethod
     def install_or_update(cls) -> None:
+        print("basedir",cls.basedir())
         shutil.rmtree(cls.basedir(), ignore_errors=True)
         try:
             settings, _ = cls.configuration()
             server_version = str(settings.get("server_version"))
             binplatform = cls.binplatform()
             with tempfile.TemporaryDirectory() as tmp:
+
+                tmp = "E:/Program/SublimeText4/Data/Temp"
                 # Download the VSIX file
                 zip_file = os.path.join(tmp, "lua.vsix")
-                urllib.request.urlretrieve(URL.format(server_version), zip_file)
+                print("zip_file",zip_file)
+                # urllib.request.urlretrieve(URL.format(server_version), zip_file)
                 # VSIX files are just zipfiles
+                zip_file = URL.format(server_version)
+                print("zip_file",zip_file)
                 with zipfile.ZipFile(zip_file, "r") as z:
                     z.extractall(tmp)
                 for root, dirs, files in os.walk(os.path.join(tmp, "extension", "server", "bin")):
@@ -75,6 +81,7 @@ class Lua(AbstractPlugin):
                     for file in files:
                         os.chmod(os.path.join(root, file), 0o744)
                 # Move the relevant subdirectory to the package storage
+                print(os.path.join(tmp, "extension", "server"),cls.basedir())
                 os.rename(os.path.join(tmp, "extension", "server"), cls.basedir())
             # Write the version stamp
             with open(cls.version_file(), "w") as fp:
@@ -87,6 +94,10 @@ class Lua(AbstractPlugin):
     def configuration(cls) -> Tuple[sublime.Settings, str]:
         base_name = "{}.sublime-settings".format(cls.name())
         file_path = "Packages/{}/{}".format(cls.name(), base_name)
+        print("configuration",base_name,file_path)
+
+        defaultSet = sublime.load_settings(base_name)
+        
         return sublime.load_settings(base_name), file_path
 
     @classmethod
@@ -120,6 +131,8 @@ class Lua(AbstractPlugin):
             if not isinstance(data, dict):
                 return False
             dd = DottedDict(data)
+
+            nkey = key
             key = "settings.LSP.LSP-lua.settings.{}".format(key)
             thelist = dd.get(key)
             if isinstance(thelist, list):
@@ -129,8 +142,16 @@ class Lua(AbstractPlugin):
                 thelist = [value]
             dd.set(key, thelist)
             data = dd.get()
-            print("data is now:", data)
             window.set_project_data(data)
+            
+            # save to usersetting
+            config = sublime.load_settings("LSP-lua.sublime-settings")
+            settings = config.get("settings")
+            settings[nkey] = thelist
+            config.set("settings", settings)
+            sublime.save_settings("LSP-lua.sublime-settings")
+
+            # callback
             done_callback()
             return True
         return False

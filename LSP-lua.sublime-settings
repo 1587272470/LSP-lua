@@ -12,7 +12,7 @@
     ],
 
     // The server version to download in $DATA/Package Storage
-    "server_version": "1.8.1",
+    "server_version": "1.9.0",
 
     // We start this server when opening a lua file
     "selector": "source.lua",
@@ -53,7 +53,7 @@
         // "Lua.runtime.special": {},
         "Lua.runtime.unicodeName": false,
         // possible values: Lua 5.1, Lua 5.2, Lua 5.3, Lua 5.4, LuaJIT
-        "Lua.runtime.version": "Lua 5.4",
+        "Lua.runtime.version": "Lua 5.1",
         "Lua.signatureHelp.enable": true,
         "Lua.telemetry.enable": false,
         "Lua.workspace.ignoreDir": [
